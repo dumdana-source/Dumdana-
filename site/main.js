@@ -65,11 +65,11 @@
   function setMsg(el, kind, text) { el.className = "form-msg " + kind; el.textContent = text; }
 
   // Mailchimp sometimes asks for a captcha. Then the visitor finishes on Mailchimp's own page in a new tab.
-  function finishOnMailchimp(form, data, msg, where) {
+  function finishOnMailchimp(form, data, msg, where, intro) {
     msg.className = "form-msg info";
     msg.textContent = "";
     var p = document.createElement("span");
-    p.textContent = "One more step: confirm you're not a robot on Mailchimp's page. ";
+    p.textContent = (intro || "One more step: confirm you're not a robot on Mailchimp's page.") + " ";
     var b = document.createElement("button");
     b.type = "button";
     b.className = "linkbtn";
@@ -132,9 +132,14 @@
       var url = C.mailchimpAction.replace("/post?", "/post-json?") + "&" + data.toString() + "&c=" + cb;
       btn.disabled = true; btn.textContent = "Adding you…";
       var s = document.createElement("script");
-      var timer = setTimeout(function () { fail("Couldn't reach the waitlist. Check your connection and try again."); }, 12000);
-      function done() { clearTimeout(timer); btn.disabled = false; btn.textContent = label; s.remove(); try { delete window[cb]; } catch (e) { window[cb] = undefined; } }
-      function fail(text) { done(); setMsg(msg, "err", text); }
+      var timer = setTimeout(fail, 10000);
+      function done() { clearTimeout(timer); btn.disabled = false; btn.textContent = label; s.remove(); window[cb] = function () {}; }
+      // If the quick signup can't connect (blocked, rate-limited or offline), finish on Mailchimp's own page instead.
+      function fail() {
+        done();
+        track("waitlist_fallback", { location: where });
+        finishOnMailchimp(form, data, msg, where, "Almost done: we couldn't connect automatically.");
+      }
       window[cb] = function (res) {
         done();
         if (res && res.result === "success") {
@@ -154,7 +159,7 @@
               : (text || "That didn't go through. Check your email address and try again."));
         }
       };
-      s.onerror = function () { fail("Couldn't reach the waitlist. Check your connection and try again."); };
+      s.onerror = fail;
       s.src = url;
       document.body.appendChild(s);
     });
