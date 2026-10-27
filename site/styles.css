@@ -351,3 +351,6 @@ fieldset.field { border: 0; margin: 0 0 1.25rem; padding: 0; }
 
 section[id] { scroll-margin-top: 80px; }
 @media (max-width: 720px) { .cmp tr.ours th { box-shadow: none; } .cmp tr.ours { box-shadow: inset 3px 0 0 var(--forest); } }
+
+.form-msg.info { color: var(--ink); font-weight: 500; }
+.linkbtn { background: none; border: 0; padding: 0; font: inherit; font-weight: 600; color: var(--forest); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }

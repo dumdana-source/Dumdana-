@@ -64,6 +64,38 @@
   /* ---------- waitlist forms → Mailchimp (JSONP endpoint, visitor stays on the page) ---------- */
   function setMsg(el, kind, text) { el.className = "form-msg " + kind; el.textContent = text; }
 
+  // Mailchimp sometimes asks for a captcha. Then the visitor finishes on Mailchimp's own page in a new tab.
+  function finishOnMailchimp(form, data, msg, where) {
+    msg.className = "form-msg info";
+    msg.textContent = "";
+    var p = document.createElement("span");
+    p.textContent = "One more step: confirm you're not a robot on Mailchimp's page. ";
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "linkbtn";
+    b.textContent = "Finish signing up";
+    b.addEventListener("click", function () {
+      var f = document.createElement("form");
+      f.method = "post";
+      f.action = C.mailchimpAction;
+      f.target = "_blank";
+      f.rel = "noopener";
+      data.forEach(function (v, k) {
+        var i = document.createElement("input");
+        i.type = "hidden"; i.name = k; i.value = v;
+        f.appendChild(i);
+      });
+      document.body.appendChild(f);
+      f.submit();
+      f.remove();
+      track("generate_lead", { method: "waitlist_captcha", location: where, flavour: data.get("FLAVOUR") || "", source: source });
+      msg.textContent = "Thanks! Finish on the Mailchimp tab, then check your inbox.";
+    });
+    msg.appendChild(p);
+    msg.appendChild(b);
+    track("waitlist_captcha", { location: where });
+  }
+
   document.querySelectorAll("form[data-waitlist]").forEach(function (form) {
     var msg = form.querySelector(".form-msg");
     var btn = form.querySelector("button[type=submit]");
@@ -81,6 +113,12 @@
       var email = (form.EMAIL.value || "").trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         setMsg(msg, "err", "Enter an email address like name@gmail.com.");
+        form.EMAIL.focus();
+        return;
+      }
+      var typo = email.match(/@(gmail|yahoo|hotmail|outlook|rediffmail|icloud)\.([a-z.]+)$/i);
+      if (typo && typo[2].toLowerCase() !== "com" && !(typo[1].toLowerCase() === "yahoo" && /^(co\.in|in)$/i.test(typo[2]))) {
+        setMsg(msg, "err", "Check your email address. Did you mean @" + typo[1].toLowerCase() + ".com?");
         form.EMAIL.focus();
         return;
       }
@@ -105,9 +143,15 @@
           track("generate_lead", { method: "waitlist", location: where, flavour: data.get("FLAVOUR") || "", source: source });
         } else {
           var text = (res && res.msg ? String(res.msg) : "").replace(/<[^>]+>/g, "").replace(/^\d+\s*-\s*/, "");
+          if (/captcha/i.test(text)) {
+            finishOnMailchimp(form, data, msg, where);
+            return;
+          }
           setMsg(msg, "err", /already subscribed/i.test(text)
             ? "You're already on the list with this email."
-            : (text || "That didn't go through. Check your email address and try again."));
+            : /too many/i.test(text)
+              ? "Too many tries from this email. Please wait a few minutes and try again."
+              : (text || "That didn't go through. Check your email address and try again."));
         }
       };
       s.onerror = function () { fail("Couldn't reach the waitlist. Check your connection and try again."); };
