@@ -1,0 +1,14 @@
+{
+  "name": "DumDana",
+  "short_name": "DumDana",
+  "icons": [
+    {
+      "src": "/assets/dumdana-mark-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#123F2F",
+  "background_color": "#ffffff",
+  "display": "browser"
+}
