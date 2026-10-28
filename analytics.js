@@ -1,7 +1,7 @@
 /* Loads Google Analytics 4 and Microsoft Clarity using the IDs in config.js. No code changes needed: just fill in config.js. */
 (function () {
   var C = window.DD_CONFIG || {};
-  if (C.ga4Id && /^G-[A-Z0-9]+$/i.test(C.ga4Id)) {
+  if (!window.gtag && C.ga4Id && /^G-[A-Z0-9]+$/i.test(C.ga4Id)) {
     var s = document.createElement("script");
     s.async = true;
     s.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(C.ga4Id);

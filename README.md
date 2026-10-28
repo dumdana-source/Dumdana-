@@ -29,3 +29,10 @@ through the Mailchimp API, so visitors never see a captcha.
 Set ONE environment variable in Vercel → Project → Settings → Environment Variables:
 - `MAILCHIMP_API_KEY` = your Mailchimp API key (ends in -us4)
 Then redeploy. Until it's set, the forms automatically fall back to Mailchimp's form endpoint.
+
+## Welcome email (free, sent from Gmail)
+The signup function adds people to Mailchimp as Subscribed and sends them a welcome email straight away.
+Add these in Vercel → Settings → Environment Variables, then redeploy:
+- `GMAIL_USER` — the Gmail address to send from
+- `GMAIL_APP_PASSWORD` — a Google app password (myaccount.google.com/apppasswords; needs 2-Step Verification on)
+The email text lives in `api/subscribe.js` (function `welcomeEmail`).
