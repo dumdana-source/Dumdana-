@@ -264,7 +264,7 @@
       function success() {
         reset();
         msg.className = "form-msg ok"; msg.textContent = "";
-        msg.appendChild(document.createTextNode("You're on the list. Check your inbox to confirm your email."));
+        msg.appendChild(document.createTextNode("You're on the list. A welcome email is on its way (check Promotions too)."));
         if (where === "hero") {
           var l = document.createElement("a");
           l.href = "#flavours"; l.textContent = " Now pick your first flavour.";

@@ -1,0 +1,9 @@
+{
+  "name": "dumdana-site",
+  "private": true,
+  "version": "1.0.0",
+  "description": "DumDana market-test website",
+  "dependencies": {
+    "nodemailer": "6.9.16"
+  }
+}
